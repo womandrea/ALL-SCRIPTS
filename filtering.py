@@ -137,7 +137,7 @@ class FilteringSample:
         :return: None
         """
         output_dir = '/'.join(self.longread.split('/')[:-1])
-        self.chop = "{}/pore_chopped_{}".format(output_dir, self.name)
+        self.chop = "{}/adapter_removed_{}".format(output_dir, self.name)
         cmd_chop = ["porechop", "-i", self.longread, "-o", self.chop]
         filter_cmd = ["filtlong",
                       "--min_length", self.minlen,
