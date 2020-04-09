@@ -36,7 +36,6 @@ class FilteringInput:
         Using the pathfiles for the longread directory, the shortread directory, or both, initiates a Sample class
         object, and updates parameters. All samples are stored in a dictionary as values, with the corresponding
         key being their sample name
-
         :return: Dict {Sample Name: <Sample Object>}
         """
 
@@ -44,7 +43,7 @@ class FilteringInput:
             # Filtering will only be done with short reads that match samples for long reads
             longdir = [f for f in os.listdir(self.londir) if os.path.isfile("{}/{}".format(self.londir, f))]
             shortdir = [f for f in os.listdir(self.shortdir) if os.path.isfile("{}/{}".format(self.shortdir,
-                                                                                             f))]
+                                                                                              f))]
 
             # if '/' not in the end of the shortdir, add it!
             samples_long = list(set(map(lambda x: x.split("_")[0], longdir)))
@@ -91,7 +90,6 @@ class FilteringInput:
     def filtering(self):
         """
         Calls what kind of read filtering should be used for each Sample object. Call appropriate Sample method.
-
         :return: None
         """
         dictionary = self.samples_sorting()
@@ -113,7 +111,6 @@ class FilteringInput:
                 v.bbduk()
 
         elif self.londir:
-            print("allow me")
             for v in dictionary.values():
                 v.genomesize = self.genomesize
                 v.filtlong()
@@ -131,40 +128,40 @@ class FilteringSample:
         self.sr2 = None
         self.genomesize = None
         self.minlen = None
-        # self.filter =
+        self.chop = None
 
     def filtlong(self):
         """
         Results in the filtering of longreads in the path, self.longread, and it can be with external references
         or not. Writes a fastq.gz file.
-
         :return: None
         """
-        print("I'm in")
         output_dir = '/'.join(self.longread.split('/')[:-1])
-        cmd = ["filtlong",
-               "--min_length", self.minlen,
-               "--keep_percent", "90"]
+        self.chop = "{}/pore_chopped_{}".format(output_dir, self.name)
+        cmd_chop = ["porechop", "-i", self.longread, "-o", self.chop]
+        filter_cmd = ["filtlong",
+                      "--min_length", self.minlen,
+                      "--keep_percent", "90"]
 
         if self.sr1 and self.sr2:
-            cmd.extend(["-1", self.sr1, "-2", self.sr2])
+            filter_cmd.extend(["-1", self.sr1, "-2", self.sr2])
         if self.genomesize:
-            cmd.extend(["--target_bases", str(int(self.genomesize) * 100)])
-        print(self.longread)
-        cmd.extend([self.longread])
-        filt = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+            filter_cmd.extend(["--target_bases", str(int(self.genomesize) * 100)])
+        filter_cmd.append(self.chop)
 
+        subprocess.run(cmd_chop)
+        filt = subprocess.Popen(filter_cmd, stdout=subprocess.PIPE)
         gz = subprocess.Popen(["gzip"], stdin=filt.stdout,
                               stdout=subprocess.PIPE)
         output = gz.communicate()[0]
         with open("{}/filtered_{}".format(output_dir, self.name), 'wb') as f:
             f.write(output)
+        os.remove(self.chop)
 
     def bbduk(self):
         """
         Results in the filtering of shortreads in the path. Trimmed reads are saved in a directory, trimmed_reads,
         within the directory the illumina short reads are kept.
-
         :return: None
         """
         out_path = '/'.join(self.sr1.split('/')[:-1])
@@ -182,3 +179,4 @@ class FilteringSample:
         self.sr2 = "{}/trimmed_reads/trimmed_{}".format(out_path, sr2_name)
 
         subprocess.run(cmd)
+
