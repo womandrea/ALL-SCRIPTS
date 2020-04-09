@@ -156,7 +156,7 @@ class FilteringSample:
         output = gz.communicate()[0]
         with open("{}/filtered_{}".format(output_dir, self.name), 'wb') as f:
             f.write(output)
-        os.remove(self.chop)
+        # os.remove(self.chop)
 
     def bbduk(self):
         """
