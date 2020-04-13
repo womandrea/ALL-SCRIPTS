@@ -1,5 +1,5 @@
 import argparse
-import polish_run
+import polisher
 
 parser = argparse.ArgumentParser(description="To be used for guppybase calling")
 
