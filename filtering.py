@@ -156,7 +156,7 @@ class FilteringSample:
         output = gz.communicate()[0]
         with open("{}/filtered_{}".format(output_dir, self.name), 'wb') as f:
             f.write(output)
-        # os.remove(self.chop)
+
 
     def bbduk(self):
         """
@@ -175,8 +175,8 @@ class FilteringSample:
                "out={}/trimmed_reads/trimmed_{}".format(out_path, sr1_name),
                "out2={}/trimmed_reads/trimmed_{}".format(out_path, sr2_name)]
 
-        self.sr1 = "{}/trimmed_reads/trimmed_{}".format(out_path, sr1_name)
-        self.sr2 = "{}/trimmed_reads/trimmed_{}".format(out_path, sr2_name)
+        self.sr1 = "{}/trimmed_reads/trimmed_{}".format(out_path, sr1_name)  # Not sure if there is an issue with directories?
+        self.sr2 = "{}/trimmed_reads/trimmed_{}".format(out_path, sr2_name)  # Not sure if there is an issue with directories?
 
         subprocess.run(cmd)
 
