@@ -21,7 +21,6 @@ class GuppyBaseCallerRun:
                     f = l.split(" ")[0]
                     if kit == k and flowcell == f:
                         model_file = "/home/bioinfo/prog/ont-guppy/data/template" + (l.split(' ')[-1]).split()[0].split('dna')[-1] + ".jsn"
-                        # print(model_file)
                 except IndexError:
                     pass
         return model_file
@@ -31,16 +30,16 @@ class GuppyBaseCallerRun:
         Initialize the GuppyBaseCallerRun Object.
         """
         self.args = args
-        self.output = args.fastq
-        self.input = args.fast5
+        self.output = args.fastq 
+        self.input = args.fast5  
         self.barcodekit = args.barcodekit
         self.kit = args.kit
         self.flowcell = args.flowcell
         self.model_file = GuppyBaseCallerRun.model_file(self.kit, self.flowcell)
-        print(self.model_file)
+        print("Model file {} is being used.\n".format(self.model_file))
         if int(args.threads) > len(os.sched_getaffinity(0)):
             self.threads = str(len(os.sched_getaffinity(0)))
-            print("You are trying to run this process on more cores than available. We changed it to {} cores.".format(
+            print("You are trying to run this process on more cores than available. We changed it to {} cores.\n".format(
                 len(os.sched_getaffinity(0))))
         else:
             self.threads = args.threads
@@ -80,11 +79,8 @@ class GuppyBaseCallerRun:
             cmd.extend(["--trim_barcode"])
         if self.args.calib_detect == "Y":
             cmd.extend(["--calib_detect"])
-        print(cmd)
-
-        results = subprocess.run(cmd)
-        if results == 0:
-            print('Base calling was successful.')
+            
+        subprocess.run(cmd)
 
     def concatenate_output(self):
         """
@@ -201,25 +197,24 @@ class FileTreatment:
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="To be used for guppybase calling. Only -fast5, -output, -flowcell, and -kit \
-are mandatory inputs. Provide full file paths for all the inputs.")
+    parser = argparse.ArgumentParser(description="To be used for guppybase calling. Provide full file paths for all the inputs.")
 
     parser.add_argument("-fast5", metavar='PATH', type=str,
-                        help="Input directory for guppy_basecaller.", dest='fast5')
+                        help="Input directory for guppy_basecaller.", dest='fast5', required=True)
 
     parser.add_argument("-output", metavar='PATH', type=str,
-                        help="Directory path for guppy_basecaller output.", dest='fastq')
+                        help="Directory path for guppy_basecaller output.", dest='fastq', required=True)
 
     parser.add_argument("-t", metavar="INT", type=str, help="Number of threads to be used for barcoding. Default 1.",
                         dest='threads', default="1")
 
-    parser.add_argument("-flowcell", metavar='F', type=str,
+    parser.add_argument("-flowcell", metavar='F', type=str, required=True
                         help="Flowcell ID of run. Required, write as a string in single quotations", dest='flowcell')
 
-    parser.add_argument("-kit", metavar='K', type=str,
+    parser.add_argument("-kit", metavar='K', type=str, required=True
                         help="Kit ID. Required, write as a string in single quotations", dest='kit')
 
-    parser.add_argument("-barcodekit", metavar="KIT", dest="barcodekit", type=str, default="None",
+    parser.add_argument("-barcodekit", metavar="KIT", dest="barcodekit", type=str, default="None", required=True
                         help="Barcode appropriate for used kit. Default is None. If there is a barcode input, write it within single quotation marks")
 
     parser.add_argument("-chunk_size", metavar="INT", type=str, help="Default is 1000", default="1000", dest="chunksize")  # chunk size
