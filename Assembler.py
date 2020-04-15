@@ -14,9 +14,11 @@ class AssemblySample:
         self.r1 = False # path file to the for the forward illumina reads
         self.r2 = False  # path file to for the reverse illumina reads
         self.args = args  # arguments from arg_parse
-        self.assembly = args.type  # I can't remember
         self.type = args.type  # type of assembly [long, contig, short]
-        self.minread = args.minr  # MUST CHANGE: only if it is a value in arg.minr (set default 0)
+        if args.minr:
+            self.minread = args.minr  # Sets only if set by the user
+        else:
+            self.minread = 0
         self.contigs = False  # updated for spades assembly, the output of the shasta long read
         self.name = None  # based on the sample name, used for file naming
 
@@ -25,14 +27,12 @@ class AssemblySample:
         """
         Will take a file and call shasta on it.
 
-        :param reads: fasta file to have shasta run on it
-        :param args: self.args
-        :returns: None. Output for all shasta ru
-        ns. Shasta will be run in the output directory. Requires that shasta is
+        :param reads: type Str: File path for the fasta used in assembly.
+        :param args: type args: From argparser
+        :returns: None. Output for all shasta runs. Shasta will be run in the output directory. Requires that shasta is downloaded and available.
         """
-        print(reads)
         sample_path = "{}/{}".format("/".join(reads.split("/")[:-1]), "ShastaRun")
-
+        # IMPROVEMENT: Identify what shasta version is used.
         cmd = ["shasta-Linux-0.1.0",
                "--input", reads,
                "--memoryMode", "filesystem",
@@ -43,21 +43,20 @@ class AssemblySample:
 
         subprocess.run(cmd)
         os.remove(reads)
-        pass
 
     @staticmethod
     def spades_run(r1, r2, long, assmb):
         """
-
-        :param r1:
-        :param r2:
-        :param long:
-        :param assmb:
+        :param r1: type Str: File path to the forward reads
+        :param r2: type Str: File path to the reverse reads
+        :param long: type Str: the output directory path
+        :param assmb: type Str/Bool: the path to the scaffold assembly, if produced by Shasta. If not, a boolean (False). 
         :return:
         """
 
         output_dir = "{}/spades/".format("/".join(long.split("/")[:-1]))
-        os.mkdir(output_dir)
+        if not os.path.isdir(output_dir):   
+            os.mkdir(output_dir)
         cmd = ["python3", "/home/bioinfo/SPAdes-3.12.0-Linux/bin/spades.py",
                "-1", r1,
                "-2", r2,
@@ -71,11 +70,10 @@ class AssemblySample:
     @staticmethod
     def skesa(r1, r2, output):
         """
-        Figure out after you get some of your new code
-        :param r1:
-        :param r2:
-        :param output:
-        :return:
+        :param r1: type Str: File path to the forward reads.
+        :param r2: type Str: File path to the reverse reads.
+        :param output: type Str: Output file path
+        :return: None. 
         """
         cmd = ["skesa", "--fastq", "{},{}".format(r1, r2), "--contigs_out", output]
         subprocess.run(cmd)
@@ -91,7 +89,7 @@ class AssemblySample:
         Decides which series of assembly stuff to run based on args, using long, r1, r2 or assembly as an input
         :return: None.
         """
-
+        # RUN THIS TO MAKE SURE
         if self.type == "long":
             AssemblySample.shasta_run(self.fasta, self.args)
         elif self.type.lower() == "contig":
@@ -113,7 +111,10 @@ class AssemblyCall:
 
     def __init__(self, args):
         # self.assembly = False
-        self.dirlong = args.long  # directory with all the long read data
+        if args.long:
+            self.dirlong = args.long  # directory with all the long read data
+        else: 
+            self.dirlong = False
         if args.sr:
             self.dirshort = args.sr  # default None, directory with all the short reads (forward and reverse)
         else:
@@ -266,4 +267,4 @@ class FastqFasta:
                     else:
                         FastqFasta.fastq_to_a("{}/{}".format(parent_path, f))
 
-if
+
